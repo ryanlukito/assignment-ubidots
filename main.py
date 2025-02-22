@@ -2,17 +2,21 @@ import network
 import time
 import machine
 import dht
+import os
 from umqtt.simple import MQTTClient
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Wi-Fi credentials
-WIFI_SSID = "99"
-WIFI_PASS = "11111111"
+WIFI_SSID = os.getenv("WIFI_NAME", "")
+WIFI_PASS = os.getenv("WIFI_PASS", "")
 
 # Ubidots credentials
-UBIDOTS_TOKEN = "BBUS-YXSG7qA6z9YRbVqktpXpkEbjdUrpHc"
-MQTT_BROKER = "industrial.api.ubidots.com"
+UBIDOTS_TOKEN = os.getenv("UBIDOTS_TOKEN", "")
+MQTT_BROKER = os.getenv("MQTT_BROKER", "industrial.api.ubidots.com")
 MQTT_PORT = 1883
-DEVICE_LABEL = "esp32_device"
+DEVICE_LABEL = os.getenv("DEVICE_LABEL", "esp32_device")
 TOPIC = f"/v1.6/devices/{DEVICE_LABEL}"
 
 # Sensor pins
