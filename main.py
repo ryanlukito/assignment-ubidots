@@ -2,8 +2,8 @@ import network
 import time
 import machine
 import dht
+import urequests  # MicroPython library for HTTP requests
 import os
-from umqtt.simple import MQTTClient
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,19 +12,15 @@ load_dotenv()
 WIFI_SSID = os.getenv("WIFI_NAME", "")
 WIFI_PASS = os.getenv("WIFI_PASS", "")
 
-# Ubidots credentials
-UBIDOTS_TOKEN = os.getenv("UBIDOTS_TOKEN", "")
-MQTT_BROKER = os.getenv("MQTT_BROKER", "industrial.api.ubidots.com")
-MQTT_PORT = 1883
-DEVICE_LABEL = os.getenv("DEVICE_LABEL", "esp32_device")
-TOPIC = f"/v1.6/devices/{DEVICE_LABEL}"
+# Flask Server URL
+FLASK_SERVER_URL = os.getenv("FLASK_SERVER_URL", "http://192.168.1.100:5000/data")  # Update with your server IP
 
 # Sensor pins
 TRIG_PIN = 14
 ECHO_PIN = 12
 DHT_PIN = 13
 
-# Setup Wi-Fi
+# Connect to Wi-Fi
 def connect_wifi():
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -32,9 +28,6 @@ def connect_wifi():
     while not wlan.isconnected():
         pass
     print("Connected to Wi-Fi")
-
-# Setup MQTT client
-client = MQTTClient("esp32", MQTT_BROKER, port=MQTT_PORT, user=UBIDOTS_TOKEN, password="", keepalive=60)
 
 # Initialize sensors
 dht_sensor = dht.DHT11(machine.Pin(DHT_PIN))
@@ -56,9 +49,8 @@ def get_distance():
     distance = (pulse_time * 0.0343) / 2  # Convert to cm
     return round(distance, 2)
 
-# Connect to Wi-Fi and MQTT
+# Connect to Wi-Fi
 connect_wifi()
-client.connect()
 
 while True:
     dht_sensor.measure()
@@ -69,12 +61,18 @@ while True:
     is_warning = 1 if temperature > 35 or temperature < 15 else 0
     
     payload = {
-        "temperature_data": {"value": temperature},
-        "humidity_data": {"value": humidity},
-        "distance_data": {"value": distance if distance is not None else 0},
-        "is_warning": {"value": is_warning}
+        "temperature": temperature,
+        "humidity": humidity,
+        "distance": distance if distance is not None else 0,
+        "is_warning": is_warning
     }
     
     print("Sending data:", payload)
-    client.publish(TOPIC, str(payload).replace("'", '"'))  # Convert to JSON format
+    try:
+        response = urequests.post(FLASK_SERVER_URL, json=payload)
+        print("Response:", response.text)
+        response.close()
+    except Exception as e:
+        print("Error sending data:", e)
+    
     time.sleep(5)
