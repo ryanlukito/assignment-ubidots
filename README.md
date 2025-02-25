@@ -78,3 +78,6 @@ TOPIC = f"/v1.6/devices/{DEVICE_LABEL}"
 
 ![Ubidots Page](<ubidots 1.jpg>)
 ![Ubidots Page](<ubidots 2.jpg>)
+
+## Ubidots Link
+[Link to our Ubidots Page](https://stem.ubidots.com/app/dashboards/public/dashboard/BkLWvZVUGWjgPIJnWnbKmlfxWoDZT0bgUfqOu6XuBjQ?navbar=true&contextbar=true&datePicker=true&devicePicker=true&displayTitle=true)
